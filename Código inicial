@@ -17,7 +17,7 @@ void setup()
   
   lcd_1.begin(16, 2);
 
-  lcd_1.print("hello world!");
+  lcd_1.print("Bem Vindo ao jogo!");
   Serial.begin(9600);
 }
 
@@ -91,5 +91,10 @@ void loop()
     geraSequencia();
     int resolucao = verificaLed();
     Serial.println(resolucao);
+    if (resolucao == 1){
+      tone(3,500);
+      delay(1000);
+      noTone(3);
+    }
   } 
 }
