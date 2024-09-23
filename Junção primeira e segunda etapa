@@ -7,7 +7,6 @@ int seqLeds[10];
 int seqPerguntas[6];
 int leds[] = {LedVerde, LedVermelho};
 volatile bool inicio = LOW;
-
 LiquidCrystal lcd(12, 11, 7, 6, 5, 4);
 void setup()
 {  
