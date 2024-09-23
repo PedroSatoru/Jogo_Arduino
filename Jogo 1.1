@@ -19,6 +19,7 @@ void setup()
   pinMode(LedVerde, OUTPUT);
   pinMode(LedVermelho, OUTPUT);
   lcd.begin(16, 2);
+  randomSeed(analogRead(0));
 
   Serial.begin(9600);
 }
@@ -218,7 +219,7 @@ void mostrarPerguntas(int posicao, int tamanho){
 
 void mensagemResultPergunta(int iterador, String resultado, int apertado){
   lcd.clear();
-  lcd.setCursor(0,0);
+  lcd.setCursor(5,0);
   lcd.print(resultado);
   if (apertado){
     lcd.setCursor(3,1);
@@ -243,12 +244,10 @@ int verificaSeqPerguntas(int apertado, int iterador){
 int verificaBotaoPergunta(int apertado, int led, int iterador){
   piscaLed(led, 150);
   if (!verificaSeqPerguntas(apertado, iterador)){
-    lcd.setCursor(5,0);
     mensagemResultPergunta(iterador, "Errou", apertado);
     delay(1000);
     return 0;
   } else{
-    lcd.setCursor(4,1);
     mensagemResultPergunta(iterador, "Acertou", apertado);
     return 1;
   }
