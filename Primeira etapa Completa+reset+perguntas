@@ -5,17 +5,18 @@ int seconds = 0;
 int aleatorio;
 int seqLeds[10];
 int leds[] = {LedVerde, LedVermelho};
+volatile bool inicio = LOW;
 
 LiquidCrystal lcd(12, 11, 7, 6, 5, 4);
 void setup()
 {  
+  attachInterrupt(digitalPinToInterrupt(2), btEsquerdo, FALLING);
   pinMode(2, INPUT_PULLUP);
   pinMode(10, INPUT_PULLUP);
   pinMode(9, INPUT_PULLUP);
   pinMode(3, OUTPUT);
   pinMode(LedVerde, OUTPUT);
   pinMode(LedVermelho, OUTPUT);
-  
   lcd.begin(16, 2);
 
   Serial.begin(9600);
@@ -81,6 +82,31 @@ void somFinalJogo(){
 	noTone(3);
 }
 
+const char* perguntas[] = {
+    "Uno tem conexão Wi-Fi",                // Não
+    "Possui Bluetooth integrado?",          // Não
+    "Suporta 12V pela porta USB",           // Não
+    "Programado em Python por padrão",      // Não
+    "Uno possui 64KB de RAM",               // Não
+    "Fótons têm massa em repouso?",         // Não
+    "Som pode viajar no vácuo?",            // Não
+    "Vulcões nunca são frios",              // Não
+    "Luz é uma partícula sempre?",          // Não
+    "Oxigênio está em Marte?",              // Não
+  //
+    "Uno tem 14 pinos digitais",            // Sim
+    "Arduino usa C++ como base",            // Sim
+    "Possui EEPROM para dados",              // Sim
+    "Roda a 16MHz de frequência",            // Sim
+    "Tem ADC com 10 bits de resolução",     // Sim
+    "Vidro é classificado como sólido",     // Sim
+    "Relâmpago é uma forma de plasma",      // Sim
+    "Luz é uma onda eletromagnética",       // Sim
+    "DNA armazena informação genética",      // Sim
+    "Cobre conduz eletricidade bem"         // Sim
+};
+
+
 void geraListaSeqAle(int *lista, int tamanho, int minIntervalo, int maxIntervalo){
   for(int i=0; i < tamanho; i++){
     aleatorio = random(minIntervalo, maxIntervalo);
@@ -131,19 +157,19 @@ int verificaBotaoMod1(int apertado, int led, int iterador){
 }
 
 void piscaLed(int led, int tempo){
-    digitalWrite(led, 1);
-    delay(tempo);
-    digitalWrite(led, 0);
+  digitalWrite(led, 1);
+  delay(tempo);
+  digitalWrite(led, 0);
 }
 
 void mensagemResultMod1(int iterador, String resultado){
-    char mensagem[13];
-  	lcd.clear();
-    sprintf(mensagem, "Sequencia: %d", iterador+1);
-    lcd.setCursor(0,0);
-    lcd.print(mensagem);
-    lcd.setCursor(0,1);
-    lcd.print(resultado);
+  char mensagem[13];
+  lcd.clear();
+  sprintf(mensagem, "Sequencia: %d", iterador+1);
+  lcd.setCursor(0,0);
+  lcd.print(mensagem);
+  lcd.setCursor(0,1);
+  lcd.print(resultado);
 }
 
 int verificaSeq(int verifica, int iterador){
@@ -156,46 +182,52 @@ int verificaSeq(int verifica, int iterador){
 }
 
 int modulo1(){
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Memorize as");
-    lcd.setCursor(0,1);
-    lcd.print("cores dos LEDs");
-    delay(1000);
-    geraListaSeqAle(seqLeds, 10, 0, 2);
-    sequenciaLed();
-  	lcd.clear();
-    lcd.print("Agora repita");
-    lcd.setCursor(0,1);
-    lcd.print("a sequencia");
-    if(verificaMod1()){
-        return 1;
-    }else{
-        return 0;
-    }
-}
-
-void reinicio(){
-    lcd.clear();
-  	lcd.setCursor(0,0);
-    lcd.print("Reiniciando o");
-    lcd.setCursor(0,1);
-    lcd.print("jogo");
-  	somErro();
-    delay(1000);
-  	lcd.clear();
-    loop();
-}
-
-void loop()
-{
+  lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Seja Bem vindo");
+  lcd.print("Memorize as");
   lcd.setCursor(0,1);
-  lcd.print("Pressione inicia");
-  
-  if (!digitalRead(2)){
-    lcd.clear();
+  lcd.print("cores dos LEDs");
+  delay(1000);
+  geraListaSeqAle(seqLeds, 10, 0, 2);
+  sequenciaLed();
+  lcd.clear();
+  lcd.print("Agora repita");
+  lcd.setCursor(0,1);
+  lcd.print("a sequencia");
+  if(verificaMod1()){
+    return 1;
+  }else{
+    return 0;
+  }
+}
+
+void reiniciar(){
+  noInterrupts();
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Reiniciando o");
+  lcd.setCursor(0,1);
+  lcd.print("jogo");
+  digitalWrite(LedVermelho, 0);
+  digitalWrite(LedVerde, 0);
+  interrupts();
+  somErro();
+  delay(1000);
+  lcd.clear();
+  asm volatile ("  jmp 0");
+}
+
+void btEsquerdo(){
+  inicio = !inicio;
+  if(inicio){
+    loop();
+  }else{
+    reiniciar();
+  }
+}
+
+void iniciar(){
+	lcd.clear();
     lcd.print("Iniciando o jogo");
     somInicio();
     delay(1000);
@@ -203,11 +235,24 @@ void loop()
         lcd.clear();
         lcd.print("Parabens!");
         somAcertoFase1();
+      	inicio = LOW;
       	delay(1000);
         
       	
     }else{
-        reinicio();
+        reiniciar();
     }
-  } 
+}
+
+void loop()
+{
+  noInterrupts();
+  lcd.setCursor(0,0);
+  lcd.print("Seja Bem vindo");
+  lcd.setCursor(0,1);
+  lcd.print("Pressione inicia");
+  interrupts();
+  if (inicio){
+  	iniciar();
+  }
 }
