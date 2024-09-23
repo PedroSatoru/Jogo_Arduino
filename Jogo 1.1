@@ -1,0 +1,436 @@
+#include <LiquidCrystal.h>
+#define LedVerde 13
+#define LedVermelho 8
+int seconds = 0;
+int aleatorio;
+int seqLeds[10];
+int seqPerguntas[6];
+int leds[] = {LedVerde, LedVermelho};
+volatile bool inicio = LOW;
+
+LiquidCrystal lcd(12, 11, 7, 6, 5, 4);
+void setup()
+{  
+  attachInterrupt(digitalPinToInterrupt(2), btEsquerdo, FALLING);
+  pinMode(2, INPUT_PULLUP);
+  pinMode(10, INPUT_PULLUP);
+  pinMode(9, INPUT_PULLUP);
+  pinMode(3, OUTPUT);
+  pinMode(LedVerde, OUTPUT);
+  pinMode(LedVermelho, OUTPUT);
+  lcd.begin(16, 2);
+  randomSeed(analogRead(0));
+
+  Serial.begin(9600);
+}
+
+void somInicio(){
+	tone(3, 392);  // Sol
+	delay(200);
+	tone(3, 440);  // Lá
+	delay(200);
+	tone(3, 523);  // Dó
+    delay(400);
+	noTone(3);
+}
+void somErro(){
+	tone(3, 523);  // Dó
+	delay(400);
+	tone(3, 466);  // Si bemol
+	delay(400);
+	tone(3, 392);  // Sol
+	delay(500);
+	tone(3, 349);  // Fá
+	delay(600);
+	noTone(3);
+}
+void somAcertoLed(){
+	tone(3, 523);  // Dó
+	delay(200);
+	tone(3, 659);  // Mi
+	delay(200);
+	tone(3, 784);  // Sol
+	delay(400);
+	noTone(3);
+}
+
+void somAcertoFase1(){
+  	tone(3, 523);  // Dó
+	delay(300);
+    tone(3, 659);  // Mi
+	delay(300);
+	tone(3, 784);  // Sol
+	delay(500);
+	tone(3, 659);  // Mi
+	delay(500);
+	noTone(3);
+    delay(1000);
+}
+void somFinalJogo(){
+	tone(3, 523);  // Dó
+	delay(300);
+	tone(3, 659);  // Mi
+	delay(300);
+	tone(3, 784);  // Sol
+	delay(300);
+	tone(3, 1046); // Dó (uma oitava acima)
+	delay(500);
+	tone(3, 784);  // Sol
+	delay(300);
+	tone(3, 659);  // Mi
+	delay(300);
+	tone(3, 523);  // Dó
+	delay(500);
+	noTone(3);
+}
+
+const char* perguntas[] = {
+    "Arduino Uno tem conexao Wi-Fi?",                // Não  0
+    "Arduino Uno possui Bluetooth integrado?",          // Não
+    "Arduino Uno suporta 12V pela porta USB?",           // Não
+    "Programado em Python por padrao?",      // Não
+    "Uno possui 64KB de RAM?",               // Não
+    "Fotons tem massa em repouso?",         // Não
+    "Som pode viajar no vacuo?",            // Não
+    "Vulcoes nunca sao frios?",              // Não
+    "Luz eh uma particula sempre?",          // Não
+    "Oxigenio esta em Marte?",              // Não 9
+  //
+    "Arduino tem 14 pinos digitais?",            // Sim 10
+    "Arduino usa C++ como base?",            // Sim
+    "Arduino possui 6 portas analgicas?",              // Sim
+    "Roda a 16MHz de frequencia?",            // Sim
+    "Arduino eh open source?",     // Sim
+    "Vidro eh classificado como solido?",     // Sim
+    "Relampago é uma forma de plasma?",      // Sim
+    "Luz eh uma onda eletromagnetica?",       // Sim
+    "DNA armazena informacao genetica?",      // Sim
+    "Cobre eh um bom condutor eletrico?"         // Sim 19
+};
+
+
+void geraListaSeqAle(int *lista, int tamanho, int minIntervalo, int maxIntervalo){
+  for(int i=0; i < tamanho; i++){
+    aleatorio = random(minIntervalo, maxIntervalo);
+    lista[i] = aleatorio;
+  }
+}
+
+void sequenciaLed(){
+  for(int i=0; i < 10; i++){
+    piscaLed(leds[seqLeds[i]], 500);
+    delay(500);
+  }
+}
+
+int verificaMod1(){
+  int apertado=0;
+  int iterador=0;
+  while(iterador < 10){
+    if(!digitalRead(10)){
+      if(!verificaBotaoMod1(0,LedVerde,iterador)){
+      	return 0;
+      }
+      somAcertoLed();
+      iterador++;
+    }
+    else if(!digitalRead(9)){
+      if(!verificaBotaoMod1(1,LedVermelho,iterador)){
+      	return 0;
+      }
+      somAcertoLed();
+      iterador++;
+    }
+    delay(100);
+  }
+  return 1;
+}
+
+int verificaBotaoMod1(int apertado, int led, int iterador){
+  piscaLed(led, 150);
+  if (!verificaSeqMod1(apertado, iterador)){
+    lcd.setCursor(5,0);
+    mensagemResultMod1(iterador, "Errou");
+    delay(1000);
+    return 0;
+  } else{
+    lcd.setCursor(4,0);
+    mensagemResultMod1(iterador, "Acertou");
+    return 1;
+  }
+}
+
+void piscaLed(int led, int tempo){
+  digitalWrite(led, 1);
+  delay(tempo);
+  digitalWrite(led, 0);
+}
+
+void mensagemResultMod1(int iterador, String resultado){
+  char mensagem[13];
+  lcd.clear();
+  sprintf(mensagem, "Sequencia: %d", iterador+1);
+  lcd.setCursor(2,0);
+  lcd.print(mensagem);
+  lcd.setCursor(4,1);
+  lcd.print(resultado);
+}
+
+int verificaSeqMod1(int verifica, int iterador){
+  if(verifica == seqLeds[iterador]){
+    return 1;
+  }
+  else {
+    return 0;
+  }
+}
+
+int modulo1(){
+  lcd.clear();
+  lcd.setCursor(2,0);
+  lcd.print("Memorize as");
+  lcd.setCursor(1,1);
+  lcd.print("cores dos LEDs");
+  delay(1000);
+  geraListaSeqAle(seqLeds, 10, 0, 2);
+  sequenciaLed();
+  lcd.clear();
+  lcd.setCursor(2,0);
+  lcd.print("Agora repita");
+  lcd.setCursor(2,1);
+  lcd.print("a sequencia");
+  if(verificaMod1()){
+    return 1;
+  }else{
+    return 0;
+  }
+}
+
+void mostrarPerguntas(int posicao, int tamanho){
+  lcd.clear();
+  lcd.print(perguntas[posicao]);
+  delay(500);
+  for (int positionCounter = 0; positionCounter < (tamanho-16); positionCounter++) {
+    lcd.scrollDisplayLeft();
+    delay(300);              
+  }
+  delay(1000); 
+}
+
+void mensagemResultPergunta(int iterador, String resultado, int apertado){
+  lcd.clear();
+  lcd.setCursor(5,0);
+  lcd.print(resultado);
+  if (apertado){
+    lcd.setCursor(3,1);
+    lcd.print("*Sim ou nao");
+  } else{
+    lcd.setCursor(3,1);
+    lcd.print("Sim ou *nao");
+  }
+}
+
+int verificaSeqPerguntas(int apertado, int iterador){
+  if(apertado == 1 && seqPerguntas[iterador] > 9){
+    return 1;
+  } else if(apertado == 0 && seqPerguntas[iterador] < 10){
+    return 1;
+  }
+  else {
+    return 0;
+  }
+}
+
+int verificaBotaoPergunta(int apertado, int led, int iterador){
+  piscaLed(led, 150);
+  if (!verificaSeqPerguntas(apertado, iterador)){
+    mensagemResultPergunta(iterador, "Errou", apertado);
+    delay(1000);
+    return 0;
+  } else{
+    mensagemResultPergunta(iterador, "Acertou", apertado);
+    return 1;
+  }
+}
+
+int delayVerificaPergunta(int iterador){
+  for(int i=0; i<10;i++){
+    if(!digitalRead(10)){
+      if(!verificaBotaoPergunta(1,LedVerde,iterador)){
+        return -1;
+      }
+      somAcertoLed();
+      return 1;
+    }
+    else if(!digitalRead(9)){
+      if(!verificaBotaoPergunta(0,LedVermelho,iterador)){
+        return -1;
+      }
+      somAcertoLed();
+      return 1;
+    }
+    delay(100);
+  } 
+  return 2;
+}
+
+int verificaPerguntas(){
+  int apertado=1;
+  int iterador=0;
+  int tempo = 10;
+  int chance = 2;
+  int op;
+  while(iterador < 6){
+    if(chance >= 0){
+      tempo=10;
+      for (int i = 10; i > 0; i--){
+        if (apertado){
+          mostrarPerguntas(seqPerguntas[iterador], strlen(perguntas[seqPerguntas[iterador]]));
+          apertado = 0;
+          delay(500);
+          lcd.clear();
+          char mensagem[16];
+          sprintf(mensagem, "Questao: %d de 6", iterador+1);
+          lcd.setCursor(0,0);
+          lcd.print(mensagem);
+          lcd.setCursor(3,1);
+          lcd.print("sim ou nao");
+        }else{
+          lcd.clear();
+          char mensagem[9];
+          sprintf(mensagem, "Tempo: %d", tempo);
+          lcd.setCursor(3,0);
+          lcd.print(mensagem);
+          lcd.setCursor(3,1);
+          lcd.print("sim ou nao");
+        }
+        op = delayVerificaPergunta(iterador);
+        if(op == -1){
+          return 0;
+        } else if(op == 1){
+          i=0;
+          apertado++;
+          iterador++;
+        }
+        else {
+          tempo--;
+        }
+      } if (tempo == 0){
+          chance--;
+          lcd.clear();
+          char mensagemTempo[14];
+          sprintf(mensagemTempo, "Tentativas: %d", chance-1);
+          lcd.setCursor(1,0);
+          lcd.print("Tempo acabou!");
+          lcd.setCursor(2,1);
+          lcd.print(mensagemTempo);
+          if(chance == 0 || iterador == 5){
+            return 0;
+          }
+          iterador++;
+          delay(2000);
+      }
+      apertado = 1;
+    }
+    else {
+      return 0;
+    }
+    delay(100);
+  }
+  return 1;
+}
+
+int fasePerguntas(){
+  lcd.clear();
+  lcd.setCursor(2,0);
+  lcd.print("Responda com");
+  lcd.setCursor(3,1);
+  lcd.print("sim ou nao");
+  delay(1000);
+  geraListaSeqAle(seqPerguntas, 6, 0, 20);
+  Serial.println("passou");
+  if(verificaPerguntas()){
+    lcd.clear();
+    lcd.setCursor(3,0);
+    lcd.print("Parebens!");
+    lcd.setCursor(0,1);
+    lcd.print("Finalizou o Jogo");
+    somFinalJogo();
+    lcd.clear();
+    inicio = LOW;
+    loop();
+  }
+  else{
+  	reiniciar();
+  }
+}
+
+void reiniciar(){
+  noInterrupts();
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Reiniciando o");
+  lcd.setCursor(5,1);
+  lcd.print("jogo");
+  digitalWrite(LedVermelho, 0);
+  digitalWrite(LedVerde, 0);
+  interrupts();
+  somErro();
+  delay(1000);
+  lcd.clear();
+  if(inicio){
+    inicio = LOW;
+    loop();
+  }
+  else{
+    asm volatile ("  jmp 0");
+  }
+}
+
+void btEsquerdo(){
+  inicio = !inicio;
+  if(inicio){
+    loop();
+  }else{
+    reiniciar();
+  }
+}
+
+void iniciar(){
+	lcd.clear();
+    lcd.print("Iniciando o jogo");
+    somInicio();
+    delay(1000);
+    if(modulo1()){
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Parebens! Passou");
+        lcd.setCursor(3,1);
+        lcd.print("da fase 1");
+        somAcertoFase1();
+        lcd.clear();
+        lcd.setCursor(4,0);
+        lcd.print("Fase de");
+        lcd.setCursor(3,1);
+        lcd.print("Perguntas");
+      	delay(1000);
+        fasePerguntas();
+        
+      	
+    }else{
+        reiniciar();
+    }
+}
+
+void loop()
+{
+  noInterrupts();
+  lcd.setCursor(1,0);
+  lcd.print("Seja Bem vindo");
+  lcd.setCursor(0,1);
+  lcd.print("Pressione inicia");
+  interrupts();
+  if (inicio){
+  	iniciar();
+  }
+}
