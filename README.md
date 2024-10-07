@@ -52,7 +52,7 @@ O jogo começa com o Arduino exibindo mensagens no LCD e piscando LEDs em uma se
 
 ### Fase 2: Jogo de Perguntas
 
-Se o jogador completar a fase de memória com sucesso, ele avança para a fase de perguntas. O Arduino fará perguntas aleatórias com respostas de sim/não, e o jogador deve responder pressionando o botão correto. O jogador tem 10 segundos para responder cada pergunta. Se o tempo acabar ou o jogador errar, ele perde uma chance, podendo pular uma pergunta.
+Se o jogador completar a fase de memória com sucesso, ele avança para a fase de perguntas. O Arduino fará perguntas aleatórias com respostas de sim/não, e o jogador deve responder pressionando o botão correto. O jogador tem 10 segundos para responder cada pergunta. Se o tempo acabar, ele perde uma chance, podendo pular uma pergunta.
 
 **Regras da Fase 2:**
 - O jogador tem 10 segundos para responder a cada pergunta.
@@ -77,4 +77,4 @@ O código do jogo foi desenvolvido em C++, utilizando a biblioteca `LiquidCrysta
 ## Autores
 
 - Pedro Henrique Satoru
-- Pedro Henrique Correa
+- Pedro Henrique Correia de Oliveira
