@@ -2,6 +2,12 @@
 
 Este projeto foi desenvolvido como parte de um trabalho da faculdade FEI. Consiste em um jogo implementado com Arduino que possui duas fases: um jogo de memória com LEDs e um jogo de perguntas com respostas de sim/não.
 
+![Diagrama do Circuito](img_arduino.png)
+## Link do Projeto no Tinkercad
+
+Você pode acessar o circuito e a simulação do projeto no Tinkercad clicando no link abaixo:
+
+[Jogo de Arduino - Simulação no Tinkercad](https://www.tinkercad.com/things/fL2FE5O3fUw-jogo-arduino?sharecode=6uSYjramlLTqF8oCIIy6r9clfH3LyNMMoarauO4mZpI)
 ## Sumário
 
 - [Visão Geral](#visão-geral)
@@ -50,8 +56,8 @@ Se o jogador completar a fase de memória com sucesso, ele avança para a fase d
 
 **Regras da Fase 2:**
 - O jogador tem 10 segundos para responder a cada pergunta.
-- Se o tempo acabar, o jogador pode pular a pergunta uma vez.
-- Se o jogador errar, ele perde uma chance e o jogo reinicia se todas as chances forem esgotadas.
+- Se e somente se, o tempo acabar, o jogador pode pular a pergunta uma vez, mas a ultima questão não pode ser pulada.
+- Se o jogador errar uma vez ou deixar o tempo passar duas vezes, o jogo reinicia totalmente
 
 
   
@@ -70,5 +76,5 @@ O código do jogo foi desenvolvido em C++, utilizando a biblioteca `LiquidCrysta
 
 ## Autores
 
-- [Pedro Henrique Satoru]
-- [Pedro Henrique Correa]
+- Pedro Henrique Satoru
+- Pedro Henrique Correa
